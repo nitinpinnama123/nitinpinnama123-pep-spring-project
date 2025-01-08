@@ -34,6 +34,7 @@ import com.example.entity.Message;
 public class SocialMediaController {
     private List<Account> accounts = new ArrayList<>();
     private List<Message> messages = new ArrayList<>();
+
     @PostMapping("/register")
     public @ResponseBody ResponseEntity<Account> registerUser (@RequestParam String username, @RequestParam String password) {
         Account a = new Account(username, password);
@@ -58,7 +59,30 @@ public class SocialMediaController {
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<Boolean> loginUser (@RequestParam String username, @RequestParam String password) {
+    public @ResponseBody ResponseEntity<Account> loginUser (@RequestParam String username, @RequestParam String password) {
+        Account acc = new Account(username, password);
+        Account accFetched = null;
+        if (acc.getUsername() == null || acc.getUsername().length() == 0
+        || acc.getPassword() == null || acc.getPassword().length() == 0)
+        {
+            return ResponseEntity.status(401).body(acc);
+        }
+        else {
+            accFetched = getAccountByUsername(acc.getUsername());
+            if (accFetched != null)
+            {
+                if (acc.getPassword().equals(accFetched.getPassword()))
+                {
+                    return ResponseEntity.status(200).body(accFetched);
+                }
+                else {
+                    return ResponseEntity.status(401).body(accFetched);
+                }
+            }
+            else {
+                return ResponseEntity.status(401).body(accFetched);
+            }
+        }
 
     }
 
@@ -84,10 +108,11 @@ public class SocialMediaController {
     @GetMapping("/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessages() {
         //return ResponseEntity.status(200).body(mess)
+        return ResponseEntity.status(200).body(messages);
     }
 
 
-    @GetMapping("/messages/{message_id}")
+    @GetMapping("/messages/{messageId}")
     public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id)
     {
         for (Message m : messages) {
@@ -99,22 +124,66 @@ public class SocialMediaController {
         return null;
     }
 
-    @DeleteMapping("/messages/{message_id}")
-    public Message deleteMessageById(@PathVariable int message_id)
+    @DeleteMapping("/messages/{messageId}")
+    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int message_id)
     {
+        ResponseEntity<Message> mDeleted = null;
+        if (messages.removeIf(message -> message.getMessageId().equals(message_id))) {
+            mDeleted = getMessageById(message_id);
+            messages.remove(mDeleted.getBody());
+        }
+        if (mDeleted == null)
+        {
+            return ResponseEntity.status(200).body(mDeleted.getBody());
+        }
+        else {
+            return ResponseEntity.status(200).body(mDeleted.getBody());
+        }
 
-    }
-
-    @PatchMapping("/messages/{message_id}")
-    public Message updateMessageTextById(@PathVariable int message_id, @RequestParam String str)
-    {
-
-    }
-
-    @GetMapping("/accounts/{account_id}/messages")
-    public List<Message> getAllMessagesByUsers(@PathVariable int account_id)
-    {
         
+    }
+
+    @PatchMapping("/messages/{messageId}")
+    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int message_id, @RequestParam String str)
+    {
+
+        ResponseEntity<Message> messageUpdated = null;
+        for (Message m : messages)
+        {
+            if (m.getMessageId() == message_id)
+            {
+                if (getMessageById(message_id) != null)
+                {
+                    if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
+                    {
+                        return ResponseEntity.status(400).body(m);
+                    }
+                    else {
+                        messageUpdated = updateMessageTextById(message_id, str);
+                        return ResponseEntity.status(200).body(messageUpdated.getBody());
+                    }
+                }
+                else {
+                    return ResponseEntity.status(400).body(m);
+                }
+            }
+        }
+        return messageUpdated;
+    }
+
+    @GetMapping("/accounts/{accountId}/messages")
+    public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int account_id)
+    {
+        List<Message> messagesByUser = new ArrayList<>();
+        for (int i = 0; i < messages.size(); i++)
+        {
+            if (messages.get(i).getPostedBy() == account_id)
+            {
+                messagesByUser.add(messages.get(i));
+            }
+        }
+        return ResponseEntity.status(200).body(messagesByUser);
+
     }
 
     @GetMapping("/accounts/{username}")
@@ -123,6 +192,19 @@ public class SocialMediaController {
         for (Account acc : accounts)
         {
             if (acc.getUsername().equals(username))
+            {
+                return acc;
+            }
+        }
+        return null;
+    }
+
+    @GetMapping("/accounts/{accountId}")
+    public @ResponseBody Account getAccountById(@PathVariable int account_id)
+    {
+        for (Account acc : accounts)
+        {
+            if (acc.getAccountId() == account_id)
             {
                 return acc;
             }
