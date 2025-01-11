@@ -4,7 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.entity.Message;
@@ -24,49 +32,9 @@ public class MessageService {
         return msgService;
     }
 
-    public @ResponseBody Message getMessageByUser(int userID) throws SQLException
-    {
-        Message messageToGet = null;
-        String sql = "SELECT * FROM message WHERE posted_by = ?";
-        Connection conn = null;
-        PreparedStatement pStmt = null;
-        ResultSet rs = null;
-
-        try {
-            System.out.println("Getting message with user = " + userID);
-            conn = ConnectionUtil.getConnection();
-
-            pStmt = conn.prepareStatement(sql);
-            pStmt.setInt(1, userID);
-
-            rs = pStmt.executeQuery();
-            
-            while (rs.next())
-            {
-                messageToGet = new Message();
-                messageToGet.setMessageId(rs.getInt("message_id"));
-                messageToGet.setPostedBy(rs.getInt("posted_by"));
-                messageToGet.setMessageText(rs.getString("message_text"));
-                messageToGet.setTimePostedEpoch(rs.getLong("time_posted_epoch"));
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        finally {
-            if (rs != null) rs.close();
-            if (pStmt != null) pStmt.close();
-        }
-        if (messageToGet != null) {
-            System.out.println("Got message = " + messageToGet);
-        } else {
-            System.out.println("No message with user = " + userID);
-        }
-        return messageToGet;
-    }
-
-
-    public Message createMessage(int postedBy, String msg_text, long time_posted_epoch) throws SQLException {
-        String sql = "INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
+    @PostMapping("/messages")
+    public @ResponseBody Message createMessage(@RequestParam int postedBy, @RequestParam String msg_text, @RequestParam long time_posted_epoch) throws SQLException {
+        String sql = "INSERT INTO message (postedBy, messageText, timePostedEpoch) VALUES (?, ?, ?)";
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -106,12 +74,13 @@ public class MessageService {
         return m;
     }
 
+    @GetMapping("/messages/{messageId}")
     public Message getMessageById(int id) throws SQLException
     {
         Message messageToGet = null;;
         ResultSet resultSet = null;
         PreparedStatement pStmt = null;
-        String sql = "SELECT message_id, posted_by, message_text, time_posted_epoch FROM message WHERE message_id = ?";
+        String sql = "SELECT messageId, postedBy, messageText, timePostedEpoch FROM message WHERE messageId = ?";
 
         try {
             Connection conn = ConnectionUtil.getConnection();
@@ -124,10 +93,10 @@ public class MessageService {
             while (resultSet.next())
             {
                 messageToGet = new Message();
-                messageToGet.setMessageId(resultSet.getInt("message_id"));
-                messageToGet.setPostedBy(resultSet.getInt("posted_by"));
-                messageToGet.setMessageText(resultSet.getString("message_text"));
-                messageToGet.setTime_posted_epoch(resultSet.getLong("time_posted_epoch"));
+                messageToGet.setMessageId(resultSet.getInt("messageId"));
+                messageToGet.setPostedBy(resultSet.getInt("postedBy"));
+                messageToGet.setMessageText(resultSet.getString("messageText"));
+                messageToGet.setTimePostedEpoch(resultSet.getLong("timePostedEpoch"));
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -141,11 +110,12 @@ public class MessageService {
         return messageToGet;
     }
     
-    public List<Message> getAllMessages() throws SQLException
+    @GetMapping("/messages")
+    public @ResponseBody List<Message> getAllMessages() throws SQLException
     {
         List<Message> messages = new ArrayList<Message>();
         Message messageFetched = null;
-        String sql = "SELECT message_id, posted_by, message_text, time_posted_epoch FROM message";
+        String sql = "SELECT messageId, postedBy, messageText, timePostedEpoch FROM message";
         ResultSet resultSet = null;
         Statement stmt = null;
         try {
@@ -158,10 +128,10 @@ public class MessageService {
             while (resultSet.next())
             {
                 messageFetched = new Message();
-                messageFetched.setMessageId(resultSet.getInt("message_id"));
-                messageFetched.setPostedBy(resultSet.getInt("posted_by"));
-                messageFetched.setMessageText(resultSet.getString("message_text"));
-                messageFetched.setTime_posted_epoch(resultSet.getLong("time_posted_epoch"));
+                messageFetched.setMessageId(resultSet.getInt("messageId"));
+                messageFetched.setPostedBy(resultSet.getInt("postedBy"));
+                messageFetched.setMessageText(resultSet.getString("messageText"));
+                messageFetched.setTimePostedEpoch(resultSet.getLong("timePostedEpoch"));
                 messages.add(messageFetched);
             }
         } catch (SQLException ex) {
@@ -175,10 +145,11 @@ public class MessageService {
         return messages;
     }
 
+    @DeleteMapping("/messages/{messageId}")
     public Message deleteMessageById(int id) throws SQLException
     {
         PreparedStatement pStmt = null;
-        String sql = "DELETE FROM message WHERE message_id = ?";
+        String sql = "DELETE FROM message WHERE messageId = ?";
         Message mRet = null;
 
         try {
@@ -205,11 +176,12 @@ public class MessageService {
         return mRet;
     }
     
+    @PatchMapping("/messages/{messageId}")
     public Message updateMessageTextById(int id, String str) throws SQLException
     {
  
         PreparedStatement pStmt = null;
-        String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
+        String sql = "UPDATE message SET messageText = ? WHERE messageId = ?";
         Message mReturn = null;
         try {
             Connection conn = ConnectionUtil.getConnection();
@@ -233,6 +205,7 @@ public class MessageService {
         
     }
 
+    @GetMapping("/accounts/{accountId}/messages")
     public List<Message> getAllMessagesByUser(int userID) throws SQLException
     {
         List<Message> messagesByUser = new ArrayList<Message>();
@@ -240,7 +213,7 @@ public class MessageService {
         Message messageFetched = null;
         PreparedStatement pStmt = null;
         ResultSet resultSet = null;
-        String sql = "SELECT message_id, posted_by, message_text, time_posted_epoch FROM message WHERE posted_by = ?";
+        String sql = "SELECT messageId, postedBy, messageText, timePostedEpoch FROM message WHERE postedBy = ?";
 
         /*return messages.stream()
         .filter(m -> m.posted_by == userID)
@@ -255,10 +228,10 @@ public class MessageService {
             while(resultSet.next())
             {
                 messageFetched = new Message();
-                messageFetched.setMessageId(resultSet.getInt("message_id"));
-                messageFetched.setPostedBy(resultSet.getInt("posted_by"));
-                messageFetched.setMessageText(resultSet.getString("message_text"));
-                messageFetched.setTime_posted_epoch(resultSet.getLong("time_posted_epoch"));
+                messageFetched.setMessageId(resultSet.getInt("messageId"));
+                messageFetched.setPostedBy(resultSet.getInt("postedBy"));
+                messageFetched.setMessageText(resultSet.getString("messageText"));
+                messageFetched.setTimePostedEpoch(resultSet.getLong("timePostedEpoch"));
                 messagesByUser.add(messageFetched);
             }
         } catch (SQLException ex) {

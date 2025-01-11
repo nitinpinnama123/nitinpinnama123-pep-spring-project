@@ -69,7 +69,7 @@ public class AccountService {
        return a;
     }
 
-    @GetMapping("/accounts/{username}")
+    @GetMapping("/account/{username}")
     public @ResponseBody Account getAccountByUsername(@PathVariable String username) throws SQLException
     {
         Account accountToGet = null;
@@ -151,7 +151,7 @@ public class AccountService {
         return retVal;
     }
 
-    @GetMapping("/accounts/{accountId}")
+    @GetMapping("/account/{accountId}")
     public @ResponseBody Account getAccountById(@PathVariable int account_id) throws SQLException {
         Account accountToGet = null;
         String sql = "SELECT accountId, username, password FROM account WHERE accountId = ?";
