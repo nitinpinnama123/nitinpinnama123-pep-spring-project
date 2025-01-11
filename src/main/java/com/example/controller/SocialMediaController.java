@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.service.AccountService;
+import com.example.service.MessageService;
 
 import ch.qos.logback.core.Context;
 
@@ -58,6 +59,7 @@ public class SocialMediaController {
            return ResponseEntity.status(200).body(accCreated);
         }
         else {
+           accounts.add(accCreated);
            return ResponseEntity.status(400).body(accCreated);
         }
         
@@ -95,6 +97,7 @@ public class SocialMediaController {
     @PostMapping("/messages")
     public @ResponseBody ResponseEntity<Message> createMessage(@RequestParam int posted_by, @RequestParam String message_text, @RequestParam long time_posted_epoch) throws SQLException {
         Message m = new Message(posted_by, message_text, time_posted_epoch);
+        MessageService msgService = MessageService.instance();
         AccountService accService = AccountService.instance();
         if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255) {
             return ResponseEntity.status(400).body(m);
@@ -104,91 +107,90 @@ public class SocialMediaController {
             return ResponseEntity.status(400).body(m);
         }
         else {
-            createMessage(m.getPostedBy(), m.getMessageText(), m.getTimePostedEpoch());
-            messages.add(m);
-            return ResponseEntity.status(200).body(m);
+            Message mAdded = msgService.createMessage(m.getPostedBy(), m.getMessageText(), m.getTimePostedEpoch());
+            messages.add(mAdded);
+            return ResponseEntity.status(200).body(mAdded);
         }
         
 
     }
 
     @GetMapping("/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getAllMessages() {
+    public @ResponseBody ResponseEntity<List<Message>> getAllMessages() throws SQLException {
         //return ResponseEntity.status(200).body(mess)
+        MessageService msgService = MessageService.instance();
+        List<Message> messages = msgService.getAllMessages();
         return ResponseEntity.status(200).body(messages);
     }
 
 
     @GetMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id)
+    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id) throws SQLException
     {
-        for (Message m : messages) {
-            if (m.getMessageId() == message_id)
-            {
-                return ResponseEntity.status(200).body(m);
-            }
-        }
-        return null;
+        MessageService msgService = MessageService.instance();
+        Message messageToGet = msgService.getMessageById(message_id);
+       if (messageToGet != null)
+       {
+        return ResponseEntity.status(200).body(messageToGet);
+       }
+       else {
+        return ResponseEntity.status(200).body(messageToGet);
+       }
     }
 
     @DeleteMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int message_id)
+    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int message_id) throws SQLException
     {
-        ResponseEntity<Message> mDeleted = null;
+        Message mDeleted = null;
+        MessageService msgService = MessageService.instance();
         if (messages.removeIf(message -> message.getMessageId().equals(message_id))) {
-            mDeleted = getMessageById(message_id);
-            messages.remove(mDeleted.getBody());
+            mDeleted = msgService.deleteMessageById(message_id);
         }
         if (mDeleted == null)
         {
-            return ResponseEntity.status(200).body(mDeleted.getBody());
+            return ResponseEntity.status(200).body(mDeleted);
         }
         else {
-            return ResponseEntity.status(200).body(mDeleted.getBody());
+            return ResponseEntity.status(200).body(mDeleted);
         }
 
         
     }
 
     @PatchMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int message_id, @RequestParam String str)
+    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int message_id, @RequestParam String str) throws SQLException
     {
-
-        ResponseEntity<Message> messageUpdated = null;
-        for (Message m : messages)
+        Message m = null;
+        for (Message msg : messages)
         {
-            if (m.getMessageId() == message_id)
+            if (msg.getMessageId() == message_id)
             {
-                if (getMessageById(message_id) != null)
-                {
-                    if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
-                    {
-                        return ResponseEntity.status(400).body(m);
-                    }
-                    else {
-                        messageUpdated = updateMessageTextById(message_id, str);
-                        return ResponseEntity.status(200).body(messageUpdated.getBody());
-                    }
-                }
-                else {
-                    return ResponseEntity.status(400).body(m);
-                }
+                m = msg;
             }
         }
-        return messageUpdated;
+        MessageService msgService = MessageService.instance();
+        if (msgService.getMessageById(message_id) != null)
+        {
+            if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
+            {
+                return ResponseEntity.status(400).body(m);
+            }
+            else {
+                Message mReturn = msgService.updateMessageTextById(message_id, str);
+                return ResponseEntity.status(200).body(mReturn);
+            }
+        }
+        else {
+            return ResponseEntity.status(400).body(msgService.getMessageById(message_id));
+        }
+    
     }
 
     @GetMapping("/accounts/{accountId}/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int account_id)
+    public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int account_id) throws SQLException
     {
-        List<Message> messagesByUser = new ArrayList<>();
-        for (int i = 0; i < messages.size(); i++)
-        {
-            if (messages.get(i).getPostedBy() == account_id)
-            {
-                messagesByUser.add(messages.get(i));
-            }
-        }
+        MessageService msgService = MessageService.instance();
+        List<Message> messagesByUser = msgService.getAllMessagesByUsers(account_id);
         return ResponseEntity.status(200).body(messagesByUser);
 
     }

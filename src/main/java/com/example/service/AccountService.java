@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import com.example.entity.Account;
 
 import Util.ConnectionUtil;
 
+@Service
 public class AccountService {
     private static AccountService accountService = null;
     private List<Account> accounts = new ArrayList<Account>();

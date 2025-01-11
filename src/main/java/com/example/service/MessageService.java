@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +20,7 @@ import com.example.entity.Message;
 
 import Util.ConnectionUtil;
 
+@Service
 public class MessageService {
     private static MessageService msgService = null;
 
@@ -206,7 +208,7 @@ public class MessageService {
     }
 
     @GetMapping("/accounts/{accountId}/messages")
-    public List<Message> getAllMessagesByUser(int userID) throws SQLException
+    public List<Message> getAllMessagesByUsers(int userID) throws SQLException
     {
         List<Message> messagesByUser = new ArrayList<Message>();
         
