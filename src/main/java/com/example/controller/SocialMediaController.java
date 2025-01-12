@@ -37,6 +37,8 @@ import ch.qos.logback.core.Context;
 @Controller
 @ResponseBody
 public class SocialMediaController {
+    private final AccountService accService;
+    private final 
     private List<Account> accounts = new ArrayList<>();
     private List<Message> messages = new ArrayList<>();
 
