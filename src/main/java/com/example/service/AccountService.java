@@ -54,7 +54,16 @@ public class AccountService {
     {
         return accRepository.findAll();
     }
-    
+
+    public Account getAccountByUsername(String username)
+    {
+        return accRepository.getAccountByUsername(username);
+    }
+
+    public Account login(String username, String password)
+    {
+        return accRepository.login(username, password);
+    }
 
 
 }

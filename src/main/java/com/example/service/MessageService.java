@@ -49,14 +49,15 @@ public class MessageService {
     }
     
     @GetMapping("/messages")
-    public @ResponseBody List<Message> getAllMessages()
+    public List<Message> getAllMessages()
     {
         return msgRepository.findAll();
     }
 
-    public void deleteMessageById(long id) throws SQLException
+    public void deleteMessageById(long id)
     {
-        msgRepository.deleteById(id);
+       msgRepository.deleteById(id);
+        
     }
     
     public Message updateMessageTextById(long id, String str)
@@ -66,6 +67,11 @@ public class MessageService {
             return msgRepository.save(msg);
         }).orElse(null);
         
+    }
+
+    public List<Message> getAllMessagesByUser(long id)
+    {
+        return msgRepository.getAllMessagesByUser(id);
     }
      
 }

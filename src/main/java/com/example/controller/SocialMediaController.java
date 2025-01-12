@@ -38,40 +38,45 @@ import ch.qos.logback.core.Context;
 @ResponseBody
 public class SocialMediaController {
     private final AccountService accService;
-    private final 
+    private final MessageService msgService;
+
+    public SocialMediaController(AccountService accService, MessageService msgService)
+    {
+        this.accService = accService;
+        this.msgService = msgService;
+    }
     private List<Account> accounts = new ArrayList<>();
     private List<Message> messages = new ArrayList<>();
 
     @PostMapping("/register")
-    public @ResponseBody ResponseEntity<Account> registerUser (@RequestParam String username, @RequestParam String password) throws SQLException  {
-        Account accCreated = null;
+    public @ResponseBody ResponseEntity<Account> registerUser (@RequestParam String username, @RequestParam String password)  {
+        Account accCreated = new Account(username, password);
+        /*Account accCreated = null;
         Account a = new Account(username, password);
-        AccountService accService = AccountService.instance();
-        if (a.getUsername() == null || a.getUsername().length() == 0)
+        AccountService accService = AccountService.instance();*/
+        if (accCreated.getUsername() == null || accCreated.getUsername().length() == 0)
         {
-            return ResponseEntity.status(400).body(a);
+            return ResponseEntity.status(400).body(accCreated);
         }
-        else if (a.getPassword() != null && a.getPassword().length() < 4)
+        else if (accCreated.getPassword() != null && accCreated.getPassword().length() < 4)
         {
-            return ResponseEntity.status(400).body(a);
+            return ResponseEntity.status(400).body(accCreated);
         }
-        else if (accService.getAccountByUsername(a.getUsername()) == null)
+        else if (accService.getAccountByUsername(accCreated.getUsername()) == null)
         {
-           accCreated = accService.registerUser(a.getUsername(), a.getPassword());
-           return ResponseEntity.status(200).body(accCreated);
+           Account acc = accService.registerUser(accCreated);
+           return ResponseEntity.status(200).body(acc);
         }
         else {
-           accounts.add(accCreated);
            return ResponseEntity.status(400).body(accCreated);
         }
         
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<Account> loginUser (@RequestParam String username, @RequestParam String password) throws SQLException {
+    public @ResponseBody ResponseEntity<Account> loginUser (@RequestParam String username, @RequestParam String password) {
         Account acc = new Account(username, password);
         Account accFetched = null;
-        AccountService accService = AccountService.instance();
         if (acc.getUsername() == null || acc.getUsername().length() == 0
         || acc.getPassword() == null || acc.getPassword().length() == 0)
         {
@@ -83,6 +88,7 @@ public class SocialMediaController {
             {
                 if (acc.getPassword().equals(accFetched.getPassword()))
                 {
+                    accService.login(username, password);
                     return ResponseEntity.status(200).body(accFetched);
                 }
                 else {
@@ -97,10 +103,8 @@ public class SocialMediaController {
     }
 
     @PostMapping("/messages")
-    public @ResponseBody ResponseEntity<Message> createMessage(@RequestParam int posted_by, @RequestParam String message_text, @RequestParam long time_posted_epoch) throws SQLException {
+    public @ResponseBody ResponseEntity<Message> createMessage(@RequestParam int posted_by, @RequestParam String message_text, @RequestParam long time_posted_epoch) {
         Message m = new Message(posted_by, message_text, time_posted_epoch);
-        MessageService msgService = MessageService.instance();
-        AccountService accService = AccountService.instance();
         if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255) {
             return ResponseEntity.status(400).body(m);
         }
@@ -109,8 +113,7 @@ public class SocialMediaController {
             return ResponseEntity.status(400).body(m);
         }
         else {
-            Message mAdded = msgService.createMessage(m.getPostedBy(), m.getMessageText(), m.getTimePostedEpoch());
-            messages.add(mAdded);
+            Message mAdded = msgService.createMessage(new Message(m.getPostedBy(), m.getMessageText(), m.getTimePostedEpoch()));
             return ResponseEntity.status(200).body(mAdded);
         }
         
@@ -118,18 +121,17 @@ public class SocialMediaController {
     }
 
     @GetMapping("/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getAllMessages() throws SQLException {
+    public @ResponseBody ResponseEntity<List<Message>> getAllMessages() {
         //return ResponseEntity.status(200).body(mess)
-        MessageService msgService = MessageService.instance();
         List<Message> messages = msgService.getAllMessages();
         return ResponseEntity.status(200).body(messages);
     }
 
 
     @GetMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id) throws SQLException
+    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable long message_id) throws SQLException
     {
-        MessageService msgService = MessageService.instance();
+        /*MessageService msgService = MessageService.instance();
         Message messageToGet = msgService.getMessageById(message_id);
        if (messageToGet != null)
        {
@@ -137,24 +139,18 @@ public class SocialMediaController {
        }
        else {
         return ResponseEntity.status(200).body(messageToGet);
-       }
+       }*/
+      Message messageToGet = msgService.getMessageById(message_id);
+      return ResponseEntity.status(200).body(messageToGet);
     }
 
     @DeleteMapping("/messages/{messageId}")
     public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int message_id) throws SQLException
     {
-        Message mDeleted = null;
-        MessageService msgService = MessageService.instance();
         if (messages.removeIf(message -> message.getMessageId().equals(message_id))) {
-            mDeleted = msgService.deleteMessageById(message_id);
+            msgService.deleteMessageById(message_id);
         }
-        if (mDeleted == null)
-        {
-            return ResponseEntity.status(200).body(mDeleted);
-        }
-        else {
-            return ResponseEntity.status(200).body(mDeleted);
-        }
+        return ResponseEntity.status(200).body(msgService.getMessageById(message_id));
 
         
     }
@@ -170,7 +166,6 @@ public class SocialMediaController {
                 m = msg;
             }
         }
-        MessageService msgService = MessageService.instance();
         if (msgService.getMessageById(message_id) != null)
         {
             if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
@@ -191,8 +186,7 @@ public class SocialMediaController {
     @GetMapping("/accounts/{accountId}/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int account_id) throws SQLException
     {
-        MessageService msgService = MessageService.instance();
-        List<Message> messagesByUser = msgService.getAllMessagesByUsers(account_id);
+        List<Message> messagesByUser = msgService.getAllMessagesByUser(account_id);
         return ResponseEntity.status(200).body(messagesByUser);
 
     }
@@ -200,7 +194,7 @@ public class SocialMediaController {
     @GetMapping("/accounts/{username}")
     public @ResponseBody Account getAccountByUsername(@PathVariable String username) throws SQLException
     {
-        AccountService accService = AccountService.instance();
+    
         Account accountToGet = accService.getAccountByUsername(username);
         for (Account acc : accounts)
         {
@@ -215,7 +209,6 @@ public class SocialMediaController {
     @GetMapping("/accounts/{accountId}")
     public @ResponseBody Account getAccountById(@PathVariable int account_id) throws SQLException
     {
-        AccountService accService = AccountService.instance();
         Account accountToGet = accService.getAccountById(account_id);
         for (Account acc : accounts)
         {
