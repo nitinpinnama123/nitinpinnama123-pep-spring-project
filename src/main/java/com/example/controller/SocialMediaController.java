@@ -128,64 +128,58 @@ public class SocialMediaController {
 
 
     @GetMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id) throws SQLException
+    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int messageId) throws SQLException
     {
-        /*MessageService msgService = MessageService.instance();
-        Message messageToGet = msgService.getMessageById(message_id);
-       if (messageToGet != null)
-       {
-        return ResponseEntity.status(200).body(messageToGet);
-       }
-       else {
-        return ResponseEntity.status(200).body(messageToGet);
-       }*/
-      Message messageToGet = msgService.getMessageById(message_id);
+      Message messageToGet = msgService.getMessageById(messageId);
       return ResponseEntity.status(200).body(messageToGet);
     }
 
-    /*@DeleteMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int message_id) throws SQLException
+    @DeleteMapping("/messages/{messageId}")
+    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int messageId) throws SQLException
     {
-        if (messages.removeIf(message -> message.getMessageId().equals(message_id))) {
-            msgService.deleteMessageById(message_id);
+        if (msgService.getMessageById(messageId) != null) {
+            msgService.deleteMessageById(messageId);
+            return ResponseEntity.status(200).body(msgService.getMessageById(messageId));
         }
-        return ResponseEntity.status(200).body(msgService.getMessageById(message_id));
+        return ResponseEntity.status(200).body(msgService.getMessageById(messageId));
 
         
-    }*/
+    }
 
-    /*@PatchMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int message_id, @RequestParam String str) throws SQLException
+    @PatchMapping("/messages/{messageId}")
+    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int messageId, @RequestParam String str) throws SQLException
     {
-        Message m = null;
+        /*Message m = null;
         for (Message msg : messages)
         {
             if (msg.getMessageId() == message_id)
             {
                 m = msg;
             }
-        }
-        if (msgService.getMessageById(message_id) != null)
+        }*/
+
+        Message m = msgService.getMessageById(messageId);
+        if (m != null)
         {
             if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
             {
                 return ResponseEntity.status(400).body(m);
             }
             else {
-                Message mReturn = msgService.updateMessageTextById(message_id, str);
-                return ResponseEntity.status(200).body(mReturn);
+                msgService.updateMessageTextById(messageId, str);
+                return ResponseEntity.status(200).body(m);
             }
         }
         else {
-            return ResponseEntity.status(400).body(msgService.getMessageById(message_id));
+            return ResponseEntity.status(400).body(m);
         }
     
-    }*/
+    }
 
     @GetMapping("/accounts/{accountId}/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int account_id) throws SQLException
+    public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int accountId) throws SQLException
     {
-        List<Message> messagesByUser = msgService.getAllMessagesByUser(account_id);
+        List<Message> messagesByUser = msgService.getAllMessagesByUser(accountId);
         return ResponseEntity.status(200).body(messagesByUser);
 
     }

@@ -26,6 +26,8 @@ import com.example.entity.Message;
 import com.example.repository.MessageRepository;
 
 import Util.ConnectionUtil;
+import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Optional;
+
 
 @Service
 @Transactional
@@ -62,10 +64,17 @@ public class MessageService {
     }
     public Message updateMessageTextById(int id, String str)
     {
-        return msgRepository.findById(id).map(msg -> {
-            msg.setMessageText(str);
-            return msgRepository.save(msg);
-        }).orElse(null);
+        Message m = msgRepository.findById(id).orElse(null);
+        /*if (m != null)
+        {
+            m.setMessageText(str);
+        }*/
+        if (m != null)
+        {
+            m.setMessageText(str);
+            return msgRepository.save(m);
+        }
+        return msgRepository.save(m);
         
     }
 
