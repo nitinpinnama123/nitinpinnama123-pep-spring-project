@@ -40,7 +40,7 @@ public class AccountService {
         return accRepository.save(acc);
     }
 
-    public Account getAccountById(long id)
+    public Account getAccountById(Long id)
     {
         Optional<Account> optionalAccount = accRepository.findById(id);
         if (optionalAccount.isPresent())

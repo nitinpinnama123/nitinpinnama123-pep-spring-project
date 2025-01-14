@@ -41,18 +41,15 @@ public class MessageService {
 
     // private List<Message> messages = new ArrayList<Message>();
 
-    @PostMapping("/messages")
     public Message createMessage(Message m) {
         return msgRepository.save(m);
     }
 
-    @GetMapping("/messages/{messageId}")
     public Message getMessageById(long id)
     {
         return msgRepository.findById(id).orElse(null);
     }
     
-    @GetMapping("/messages")
     public List<Message> getAllMessages()
     {
         return msgRepository.findAll();

@@ -10,6 +10,8 @@ import com.example.entity.Message;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
+
     @Query("SELECT m FROM Message m WHERE m.postedBy = :userID")
     List<Message> findAllMessagesByUser(long userID);
+    
 }

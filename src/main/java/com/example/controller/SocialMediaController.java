@@ -77,7 +77,7 @@ public class SocialMediaController {
 
     @PostMapping("/login")
     public @ResponseBody ResponseEntity<Account> loginUser (@RequestBody Account acc) {
-        //Account acc = new Account(username, password);
+
         Account accFetched = null;
         if (acc.getUsername() == null || acc.getUsername().length() == 0
         || acc.getPassword() == null || acc.getPassword().length() == 0)
@@ -99,17 +99,20 @@ public class SocialMediaController {
     }
 
     @PostMapping("/messages")
-    public @ResponseBody ResponseEntity<Message> createMessage(@RequestParam int posted_by, @RequestParam String message_text, @RequestParam long time_posted_epoch) {
-        Message m = new Message(posted_by, message_text, time_posted_epoch);
+    public @ResponseBody ResponseEntity<Message> createMessage(@RequestBody Message m) {
+        //Message m = new Message(posted_by, message_text, time_posted_epoch);
         if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255) {
+            // Message text is empty or > 255
             return ResponseEntity.status(400).body(m);
         }
         else if (accService.getAccountById(m.getPostedBy()) == null)
         {
+            // posting user ID does not exist
             return ResponseEntity.status(400).body(m);
         }
         else {
-            Message mAdded = msgService.createMessage(new Message(m.getPostedBy(), m.getMessageText(), m.getTimePostedEpoch()));
+            // 
+            Message mAdded = msgService.createMessage(m);
             return ResponseEntity.status(200).body(mAdded);
         }
         
