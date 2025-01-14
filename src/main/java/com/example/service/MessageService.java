@@ -10,7 +10,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mapping.AccessOptions.SetOptions.Propagation;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +28,7 @@ import com.example.repository.MessageRepository;
 import Util.ConnectionUtil;
 
 @Service
+@Transactional
 public class MessageService {
     MessageRepository msgRepository;
     private static MessageService msgService = null;
@@ -59,7 +63,6 @@ public class MessageService {
        msgRepository.deleteById(id);
         
     }
-    
     public Message updateMessageTextById(long id, String str)
     {
         return msgRepository.findById(id).map(msg -> {
