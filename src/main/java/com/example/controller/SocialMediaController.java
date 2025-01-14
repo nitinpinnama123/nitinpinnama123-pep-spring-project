@@ -39,6 +39,7 @@ import ch.qos.logback.core.Context;
 
 @RestController
 public class SocialMediaController {
+
     private final AccountService accService;
     private final MessageService msgService;
 
@@ -86,7 +87,9 @@ public class SocialMediaController {
             return ResponseEntity.status(401).body(acc);
         }
         else {
+            // Login with credentials
             accFetched = accService.login(acc.getUsername(), acc.getPassword());
+            // Account exists
             if (accFetched != null)
             {
                 return ResponseEntity.status(200).body(accFetched);
@@ -100,8 +103,10 @@ public class SocialMediaController {
 
     @PostMapping("/messages")
     public @ResponseBody ResponseEntity<Message> createMessage(@RequestBody Message m) {
+
         //Message m = new Message(posted_by, message_text, time_posted_epoch);
-        if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255) {
+        if (m.getMessageText() == null || m.getMessageText().length() == 0 || 
+            m.getMessageText().length() > 255) {
             // Message text is empty or > 255
             return ResponseEntity.status(400).body(m);
         }
@@ -111,7 +116,7 @@ public class SocialMediaController {
             return ResponseEntity.status(400).body(m);
         }
         else {
-            // 
+            // Message provided is good, save it
             Message mAdded = msgService.createMessage(m);
             return ResponseEntity.status(200).body(mAdded);
         }
@@ -121,7 +126,7 @@ public class SocialMediaController {
 
     @GetMapping("/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessages() {
-        //return ResponseEntity.status(200).body(mess)
+
         List<Message> messages = msgService.getAllMessages();
         return ResponseEntity.status(200).body(messages);
     }
@@ -135,43 +140,39 @@ public class SocialMediaController {
     }
 
     @DeleteMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> deleteMessageById(@PathVariable int messageId) throws SQLException
+    public @ResponseBody ResponseEntity<String> deleteMessageById(@PathVariable int messageId) throws SQLException
     {
-        if (msgService.getMessageById(messageId) != null) {
+        if (msgService.getMessageById(messageId) != null) { 
+            // Message exists, delete it and respond with 1
             msgService.deleteMessageById(messageId);
-            return ResponseEntity.status(200).body(msgService.getMessageById(messageId));
+            return ResponseEntity.status(200).body("1");
         }
-        return ResponseEntity.status(200).body(msgService.getMessageById(messageId));
-
-        
+        // Given message does not exit, nothing to do, return success
+        return ResponseEntity.status(200).body("");
     }
 
     @PatchMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> updateMessageTextById(@PathVariable int messageId, @RequestParam String str) throws SQLException
+    public @ResponseBody ResponseEntity<String> updateMessageTextById(@PathVariable int messageId, @RequestBody Message mProvided) throws SQLException
     {
-        /*Message m = null;
-        for (Message msg : messages)
-        {
-            if (msg.getMessageId() == message_id)
-            {
-                m = msg;
-            }
-        }*/
 
         Message m = msgService.getMessageById(messageId);
         if (m != null)
         {
-            if (m.getMessageText() == null || m.getMessageText().length() == 0 || m.getMessageText().length() > 255)
+            // Message with given ID exists
+            if (mProvided.getMessageText() == null || mProvided.getMessageText().length() == 0 || 
+                mProvided.getMessageText().length() > 255)
             {
-                return ResponseEntity.status(400).body(m);
+                // Given message is empty or > 255
+                return ResponseEntity.status(400).body("Invalid message");
             }
             else {
-                msgService.updateMessageTextById(messageId, str);
-                return ResponseEntity.status(200).body(m);
+                msgService.updateMessageTextById(messageId, mProvided.getMessageText());
+                return ResponseEntity.status(200).body("1");
+                //return new ResponseEntity<String>("1", HttpStatus.OK);
             }
         }
         else {
-            return ResponseEntity.status(400).body(m);
+            return ResponseEntity.status(400).body("Message id does not exist");
         }
     
     }

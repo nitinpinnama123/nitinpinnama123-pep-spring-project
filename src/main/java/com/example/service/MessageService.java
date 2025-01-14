@@ -65,10 +65,7 @@ public class MessageService {
     public Message updateMessageTextById(int id, String str)
     {
         Message m = msgRepository.findById(id).orElse(null);
-        /*if (m != null)
-        {
-            m.setMessageText(str);
-        }*/
+ 
         if (m != null)
         {
             m.setMessageText(str);
