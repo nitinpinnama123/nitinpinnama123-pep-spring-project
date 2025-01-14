@@ -51,11 +51,7 @@ public class SocialMediaController {
 
     @PostMapping("/register")
     public @ResponseBody ResponseEntity<Account> registerUser (@RequestBody Account acc)  {
-        // Account accCreated = new Account(acc.getUsername(), acc.getPassword());
-        /*Account accCreated = null;
-        Account a = new Account(username, password);
-        AccountService accService = AccountService.instance();*/
-        System.out.println("Account username = " + acc.getUsername() + " password = " + acc.getPassword());
+
         if (acc.getUsername() == null || acc.getUsername().length() == 0)
         {
             // Username is missing; return 400
@@ -80,26 +76,20 @@ public class SocialMediaController {
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<Account> loginUser (@RequestParam String username, @RequestParam String password) {
-        Account acc = new Account(username, password);
+    public @ResponseBody ResponseEntity<Account> loginUser (@RequestBody Account acc) {
+        //Account acc = new Account(username, password);
         Account accFetched = null;
         if (acc.getUsername() == null || acc.getUsername().length() == 0
         || acc.getPassword() == null || acc.getPassword().length() == 0)
         {
+            // username or password is null, return 401
             return ResponseEntity.status(401).body(acc);
         }
         else {
-            accFetched = accService.getAccountByUsername(acc.getUsername());
+            accFetched = accService.login(acc.getUsername(), acc.getPassword());
             if (accFetched != null)
             {
-                if (acc.getPassword().equals(accFetched.getPassword()))
-                {
-                    accService.login(username, password);
-                    return ResponseEntity.status(200).body(accFetched);
-                }
-                else {
-                    return ResponseEntity.status(401).body(accFetched);
-                }
+                return ResponseEntity.status(200).body(accFetched);
             }
             else {
                 return ResponseEntity.status(401).body(accFetched);
