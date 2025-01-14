@@ -26,8 +26,7 @@ import Util.ConnectionUtil;
 @Service
 @Transactional
 public class AccountService {
-    /*private static AccountService accountService = null;
-    private List<Account> accounts = new ArrayList<Account>();*/
+
     AccountRepository accRepository;
 
     @Autowired
@@ -40,8 +39,9 @@ public class AccountService {
         return accRepository.save(acc);
     }
 
-    public Account getAccountById(Long id)
+    public Account getAccountById(Integer id)
     {
+        //Optional<Account> optionalAccount = accRepository.findById(new Long((long)id.intValue()));
         Optional<Account> optionalAccount = accRepository.findById(id);
         if (optionalAccount.isPresent())
         {

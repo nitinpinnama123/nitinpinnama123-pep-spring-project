@@ -9,9 +9,10 @@ import org.springframework.stereotype.Repository;
 import com.example.entity.Message;
 
 @Repository
-public interface MessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepository extends JpaRepository<Message, Integer> {
 
     @Query("SELECT m FROM Message m WHERE m.postedBy = :userID")
-    List<Message> findAllMessagesByUser(long userID);
+    List<Message> findAllMessagesByUser(int userID);
+
     
 }

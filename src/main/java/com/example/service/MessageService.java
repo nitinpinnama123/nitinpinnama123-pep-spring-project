@@ -45,7 +45,7 @@ public class MessageService {
         return msgRepository.save(m);
     }
 
-    public Message getMessageById(long id)
+    public Message getMessageById(int id)
     {
         return msgRepository.findById(id).orElse(null);
     }
@@ -55,12 +55,12 @@ public class MessageService {
         return msgRepository.findAll();
     }
 
-    public void deleteMessageById(long id)
+    public void deleteMessageById(int id)
     {
        msgRepository.deleteById(id);
         
     }
-    public Message updateMessageTextById(long id, String str)
+    public Message updateMessageTextById(int id, String str)
     {
         return msgRepository.findById(id).map(msg -> {
             msg.setMessageText(str);
@@ -69,7 +69,7 @@ public class MessageService {
         
     }
 
-    public List<Message> getAllMessagesByUser(long id)
+    public List<Message> getAllMessagesByUser(int id)
     {
         return msgRepository.findAllMessagesByUser(id);
     }

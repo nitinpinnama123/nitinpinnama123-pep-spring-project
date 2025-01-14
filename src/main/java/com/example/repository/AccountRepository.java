@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 import com.example.entity.Account;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Integer> {
+
     @Query("SELECT a FROM Account a WHERE a.username = :username")
     Account findAccountByUsername(String username);
 

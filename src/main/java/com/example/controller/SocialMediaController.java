@@ -128,7 +128,7 @@ public class SocialMediaController {
 
 
     @GetMapping("/messages/{messageId}")
-    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable long message_id) throws SQLException
+    public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int message_id) throws SQLException
     {
         /*MessageService msgService = MessageService.instance();
         Message messageToGet = msgService.getMessageById(message_id);
