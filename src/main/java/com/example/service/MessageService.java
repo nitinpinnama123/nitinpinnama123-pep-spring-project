@@ -33,7 +33,6 @@ import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Optional;
 @Transactional
 public class MessageService {
     MessageRepository msgRepository;
-    private static MessageService msgService = null;
 
     @Autowired
     public MessageService(MessageRepository msgRepository)
@@ -41,7 +40,6 @@ public class MessageService {
         this.msgRepository = msgRepository;
     }
 
-    // private List<Message> messages = new ArrayList<Message>();
 
     public Message createMessage(Message m) {
         return msgRepository.save(m);

@@ -10,6 +10,7 @@ import com.example.entity.Account;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
 
+    // Named queries
     @Query("SELECT a FROM Account a WHERE a.username = :username")
     Account findAccountByUsername(String username);
 

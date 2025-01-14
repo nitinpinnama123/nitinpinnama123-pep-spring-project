@@ -60,16 +60,16 @@ public class SocialMediaController {
         }
         else if (acc.getPassword() == null || acc.getPassword().length() < 4)
         {
-            // Password is null or password length is < 4
+            // Password is null or password length is < 4; return 400
             return ResponseEntity.status(400).body(acc);
         }
         else if (accService.getAccountByUsername(acc.getUsername()) != null)
         {
-            // User already exists
+            // User already exists; return 409
             return ResponseEntity.status(409).body(acc);
         }
         else {
-            // User doesn't exist, create account
+            // User doesn't exist, create account and return 200
            Account acct = accService.registerUser(acc);
            return ResponseEntity.status(200).body(acct);
         }
@@ -89,12 +89,13 @@ public class SocialMediaController {
         else {
             // Login with credentials
             accFetched = accService.login(acc.getUsername(), acc.getPassword());
-            // Account exists
             if (accFetched != null)
             {
+                // Account exists (valid credentials), return 200
                 return ResponseEntity.status(200).body(accFetched);
             }
             else {
+                // Account does not exist (invalid credentials), return 401
                 return ResponseEntity.status(401).body(accFetched);
             }
         }
@@ -107,16 +108,16 @@ public class SocialMediaController {
         //Message m = new Message(posted_by, message_text, time_posted_epoch);
         if (m.getMessageText() == null || m.getMessageText().length() == 0 || 
             m.getMessageText().length() > 255) {
-            // Message text is empty or > 255
+            // Message text is empty or > 255, return 400
             return ResponseEntity.status(400).body(m);
         }
         else if (accService.getAccountById(m.getPostedBy()) == null)
         {
-            // posting user ID does not exist
+            // posting user ID does not exist, return 400
             return ResponseEntity.status(400).body(m);
         }
         else {
-            // Message provided is good, save it
+            // Message provided is good, save it and return 200
             Message mAdded = msgService.createMessage(m);
             return ResponseEntity.status(200).body(mAdded);
         }
@@ -127,16 +128,16 @@ public class SocialMediaController {
     @GetMapping("/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessages() {
 
-        List<Message> messages = msgService.getAllMessages();
-        return ResponseEntity.status(200).body(messages);
+        List<Message> messages = msgService.getAllMessages(); // All messages
+        return ResponseEntity.status(200).body(messages); // return 200 whether or not there are any messages
     }
 
 
     @GetMapping("/messages/{messageId}")
     public @ResponseBody ResponseEntity<Message> getMessageById(@PathVariable int messageId) throws SQLException
     {
-      Message messageToGet = msgService.getMessageById(messageId);
-      return ResponseEntity.status(200).body(messageToGet);
+      Message messageToGet = msgService.getMessageById(messageId); // Get message by id
+      return ResponseEntity.status(200).body(messageToGet); // return 200  
     }
 
     @DeleteMapping("/messages/{messageId}")
@@ -147,7 +148,7 @@ public class SocialMediaController {
             msgService.deleteMessageById(messageId);
             return ResponseEntity.status(200).body("1");
         }
-        // Given message does not exit, nothing to do, return success
+        // Given message does not exist, nothing to do, return success (200)
         return ResponseEntity.status(200).body("");
     }
 
@@ -155,23 +156,24 @@ public class SocialMediaController {
     public @ResponseBody ResponseEntity<String> updateMessageTextById(@PathVariable int messageId, @RequestBody Message mProvided) throws SQLException
     {
 
-        Message m = msgService.getMessageById(messageId);
+        Message m = msgService.getMessageById(messageId); // Get message with given messageID
         if (m != null)
         {
             // Message with given ID exists
             if (mProvided.getMessageText() == null || mProvided.getMessageText().length() == 0 || 
                 mProvided.getMessageText().length() > 255)
             {
-                // Given message is empty or > 255
+                // Given message is empty or > 255, return 400
                 return ResponseEntity.status(400).body("Invalid message");
             }
             else {
+                // Given message is valid length, update message text with provided text and return 200
                 msgService.updateMessageTextById(messageId, mProvided.getMessageText());
                 return ResponseEntity.status(200).body("1");
                 //return new ResponseEntity<String>("1", HttpStatus.OK);
             }
         }
-        else {
+        else { // Message with given id does not exist, return 400
             return ResponseEntity.status(400).body("Message id does not exist");
         }
     
@@ -180,39 +182,12 @@ public class SocialMediaController {
     @GetMapping("/accounts/{accountId}/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessagesByUsers(@PathVariable int accountId) throws SQLException
     {
-        List<Message> messagesByUser = msgService.getAllMessagesByUser(accountId);
-        return ResponseEntity.status(200).body(messagesByUser);
+        List<Message> messagesByUser = msgService.getAllMessagesByUser(accountId); // Get all messages by the user with given accountID
+        return ResponseEntity.status(200).body(messagesByUser); // return 200
 
     }
 
-    /*@GetMapping("/accounts/{username}")
-    public @ResponseBody Account getAccountByUsername(@PathVariable String username) throws SQLException
-    {
     
-        Account accountToGet = accService.getAccountByUsername(username);
-        for (Account acc : accounts)
-        {
-            if (acc.getUsername().equals(accountToGet.getUsername()))
-            {
-                return acc;
-            }
-        }
-        return null;
-    }*/
-
-    /*@GetMapping("/accounts/{accountId}")
-    public @ResponseBody Account getAccountById(@PathVariable int account_id) throws SQLException
-    {
-        Account accountToGet = accService.getAccountById(account_id);
-        for (Account acc : accounts)
-        {
-            if (acc.getAccountId() == accountToGet.getAccountId())
-            {
-                return acc;
-            }
-        }
-        return null;
-    }*/
         
 
 
