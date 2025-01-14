@@ -74,7 +74,7 @@ public class MessageService {
 
     public List<Message> getAllMessagesByUser(long id)
     {
-        return msgRepository.getAllMessagesByUser(id);
+        return msgRepository.findAllMessagesByUser(id);
     }
      
 }

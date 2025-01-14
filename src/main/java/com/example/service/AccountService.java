@@ -59,12 +59,12 @@ public class AccountService {
 
     public Account getAccountByUsername(String username)
     {
-        return accRepository.getAccountByUsername(username);
+        return accRepository.findAccountByUsername(username);
     }
 
     public Account login(String username, String password)
     {
-        return accRepository.login(username, password);
+        return accRepository.findAccountByUsernameAndPassword(username, password);
     }
 
 
